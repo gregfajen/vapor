@@ -43,7 +43,9 @@ final class HTTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
                 self.logger.debug("In-flight request has completed")
             }
             response.headers.add(name: .connection, value: keepAlive ? "keep-alive" : "close")
-            let done = context.write(self.wrapOutboundOut(response))
+            let done = context.eventLoop.flatSubmit {
+                context.write(self.wrapOutboundOut(response))
+            }
             done.whenComplete { result in
                 switch result {
                 case .success:
